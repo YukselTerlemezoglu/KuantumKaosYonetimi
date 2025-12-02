@@ -1,0 +1,7 @@
+C:\Users\yukse\Desktop\Dersler\Nesne\KuantumKaosYönetimiCsharp\KuantumKaosYönetimiCsharp\bin\Debug\KuantumKaosYönetimiCsharp.exe.config
+C:\Users\yukse\Desktop\Dersler\Nesne\KuantumKaosYönetimiCsharp\KuantumKaosYönetimiCsharp\bin\Debug\KuantumKaosYönetimiCsharp.exe
+C:\Users\yukse\Desktop\Dersler\Nesne\KuantumKaosYönetimiCsharp\KuantumKaosYönetimiCsharp\bin\Debug\KuantumKaosYönetimiCsharp.pdb
+C:\Users\yukse\Desktop\Dersler\Nesne\KuantumKaosYönetimiCsharp\KuantumKaosYönetimiCsharp\obj\Debug\KuantumKaosYönetimiCsharp.csproj.AssemblyReference.cache
+C:\Users\yukse\Desktop\Dersler\Nesne\KuantumKaosYönetimiCsharp\KuantumKaosYönetimiCsharp\obj\Debug\KuantumKaosYönetimiCsharp.csproj.CoreCompileInputs.cache
+C:\Users\yukse\Desktop\Dersler\Nesne\KuantumKaosYönetimiCsharp\KuantumKaosYönetimiCsharp\obj\Debug\KuantumKaosYönetimiCsharp.exe
+C:\Users\yukse\Desktop\Dersler\Nesne\KuantumKaosYönetimiCsharp\KuantumKaosYönetimiCsharp\obj\Debug\KuantumKaosYönetimiCsharp.pdb

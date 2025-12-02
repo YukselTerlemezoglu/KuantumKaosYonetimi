@@ -1,0 +1,205 @@
+import random
+
+# ==== Custom Exception ====
+class KuantumCokusuException(Exception):
+    def __init__(self, message):
+        super().__init__(message)
+
+
+# ==== Interface benzeri yapı ====
+class IKritik:
+    def acil_durum_sogutmasi(self):
+        raise NotImplementedError
+
+
+# ==== Abstract Base Class ====
+class KuantumNesnesi:
+    def __init__(self, id_, stabilite, tehlike_seviyesi):
+        self._id = id_
+        self._stabilite = 0
+        self.stabilite = stabilite
+        self._tehlike_seviyesi = 0
+        self.tehlike_seviyesi = tehlike_seviyesi
+
+    @property
+    def id(self):
+        return self._id
+
+    @property
+    def stabilite(self):
+        return self._stabilite
+
+    @stabilite.setter
+    def stabilite(self, value):
+        if value < 0:
+            self._stabilite = 0
+        elif value > 100:
+            self._stabilite = 100
+        else:
+            self._stabilite = value
+
+    @property
+    def tehlike_seviyesi(self):
+        return self._tehlike_seviyesi
+
+    @tehlike_seviyesi.setter
+    def tehlike_seviyesi(self, value):
+        if value < 1:
+            self._tehlike_seviyesi = 1
+        elif value > 10:
+            self._tehlike_seviyesi = 10
+        else:
+            self._tehlike_seviyesi = value
+
+    def azalt_stabilite(self, miktar):
+        self.stabilite = self.stabilite - miktar
+        if self.stabilite <= 0:
+            raise KuantumCokusuException(f"Kuantum Çöküşü! Patlayan Nesne ID: {self.id}")
+
+    def arttir_stabilite(self, miktar):
+        self.stabilite = self.stabilite + miktar
+
+    def analiz_et(self):
+        raise NotImplementedError
+
+    def durum_bilgisi(self):
+        return f"[{self.__class__.__name__}] ID: {self.id}, Stabilite: {self.stabilite:.2f}, Tehlike: {self.tehlike_seviyesi}"
+
+
+# ==== Concrete Classes ====
+class VeriPaketi(KuantumNesnesi):
+    def analiz_et(self):
+        print("Veri içeriği okundu.")
+        self.azalt_stabilite(5)
+
+
+class KaranlikMadde(KuantumNesnesi, IKritik):
+    def analiz_et(self):
+        print("Karanlık madde analizi yapılıyor...")
+        self.azalt_stabilite(15)
+
+    def acil_durum_sogutmasi(self):
+        print("Karanlık madde için acil durum soğutması uygulanıyor...")
+        self.arttir_stabilite(50)
+
+
+class AntiMadde(KuantumNesnesi, IKritik):
+    def analiz_et(self):
+        print("Evrenin dokusu titriyor...")
+        self.azalt_stabilite(25)
+
+    def acil_durum_sogutmasi(self):
+        print("Antimadde için acil durum soğutması uygulanıyor...")
+        self.arttir_stabilite(50)
+
+
+# ==== Main Loop ====
+envanter = []
+sayac = 1
+
+
+def yeni_nesne_ekle():
+    global sayac
+    tip = random.randint(0, 2)  # 0,1,2
+    stabilite = random.randint(60, 100)  # 60-100
+    tehlike = random.randint(1, 10)      # 1-10
+
+    if tip == 0:
+        id_ = f"V-{sayac}"
+        nesne = VeriPaketi(id_, stabilite, tehlike)
+    elif tip == 1:
+        id_ = f"K-{sayac}"
+        nesne = KaranlikMadde(id_, stabilite, tehlike)
+    else:
+        id_ = f"A-{sayac}"
+        nesne = AntiMadde(id_, stabilite, tehlike)
+
+    sayac += 1
+    envanter.append(nesne)
+    print(f"Yeni nesne eklendi: {nesne.durum_bilgisi()}")
+
+
+def envanteri_listele():
+    if not envanter:
+        print("Envanter boş.")
+        return
+    print("=== ENVANTER DURUMU ===")
+    for nesne in envanter:
+        print(nesne.durum_bilgisi())
+
+
+def nesne_bul(id_):
+    for n in envanter:
+        if n.id.lower() == id_.lower():
+            return n
+    return None
+
+
+def nesne_analiz_et():
+    if not envanter:
+        print("Depo tamamen boş.")
+        return
+
+    id_ = input("Analiz edilecek nesnenin ID'sini giriniz: ").strip()
+    nesne = nesne_bul(id_)
+    if nesne is None:
+        print("Nesne bulunamadı!")
+        return
+
+    nesne.analiz_et()
+    print("Güncel durum: " + nesne.durum_bilgisi())
+
+
+def sogutma_yap():
+    if not envanter:
+        print("Depo tamamen boş.")
+        return
+
+    id_ = input("Soğutma yapılacak nesnenin ID'sini giriniz: ").strip()
+    nesne = nesne_bul(id_)
+    if nesne is None:
+        print("Nesne bulunamadı!")
+        return
+
+    if isinstance(nesne, IKritik):
+        nesne.acil_durum_sogutmasi()
+        print("Güncel durum: " + nesne.durum_bilgisi())
+    else:
+        print("Bu nesne soğutulamaz! (IKritik değil)")
+
+
+def main():
+    try:
+        while True:
+            print("KUANTUM AMBARI KONTROL PANELİ")
+            print("1. Yeni Nesne Ekle (Rastgele)")
+            print("2. Tüm Envanteri Listele")
+            print("3. Nesneyi Analiz Et (ID ile)")
+            print("4. Acil Durum Soğutması Yap (ID ile)")
+            print("5. Çıkış")
+            secim = input("Seçiminiz: ").strip()
+            print()
+
+            if secim == "1":
+                yeni_nesne_ekle()
+            elif secim == "2":
+                envanteri_listele()
+            elif secim == "3":
+                nesne_analiz_et()
+            elif secim == "4":
+                sogutma_yap()
+            elif secim == "5":
+                break
+            else:
+                print("Geçersiz seçim!\n")
+
+            print()
+    except KuantumCokusuException as ex:
+        print()
+        print("SİSTEM ÇÖKTÜ! TAHLİYE BAŞLATILIYOR...")
+        print(ex)
+    print("Program sonlandı.")
+
+
+if __name__ == "__main__":
+    main()

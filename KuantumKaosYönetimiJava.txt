@@ -1,0 +1,272 @@
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
+import java.util.Scanner;
+
+// ==== Custom Exception ====
+class KuantumCokusuException extends Exception {
+    public KuantumCokusuException(String message) {
+        super(message);
+    }
+}
+
+// ==== Interface ====
+interface IKritik {
+    void acilDurumSogutmasi();
+}
+
+// ==== Abstract Base Class ====
+abstract class KuantumNesnesi {
+    private double stabilite; // 0-100
+    private int tehlikeSeviyesi; // 1-10
+
+    private String id;
+
+    public KuantumNesnesi(String id, double stabilite, int tehlikeSeviyesi) {
+        this.id = id;
+        setStabilite(stabilite);
+        setTehlikeSeviyesi(tehlikeSeviyesi);
+    }
+
+    public String getID() {
+        return id;
+    }
+
+    public double getStabilite() {
+        return stabilite;
+    }
+
+    protected void setStabilite(double value) {
+        if (value < 0) {
+            stabilite = 0;
+        } else if (value > 100) {
+            stabilite = 100;
+        } else {
+            stabilite = value;
+        }
+    }
+
+    public int getTehlikeSeviyesi() {
+        return tehlikeSeviyesi;
+    }
+
+    protected void setTehlikeSeviyesi(int value) {
+        if (value < 1) {
+            tehlikeSeviyesi = 1;
+        } else if (value > 10) {
+            tehlikeSeviyesi = 10;
+        } else {
+            tehlikeSeviyesi = value;
+        }
+    }
+
+    protected void azaltStabilite(double miktar) throws KuantumCokusuException {
+        setStabilite(getStabilite() - miktar);
+        if (getStabilite() <= 0) {
+            throw new KuantumCokusuException("Kuantum Çöküşü! Patlayan Nesne ID: " + getID());
+        }
+    }
+
+    protected void arttirStabilite(double miktar) {
+        setStabilite(getStabilite() + miktar);
+    }
+
+    public abstract void analizEt() throws KuantumCokusuException;
+
+    public String durumBilgisi() {
+        return "[" + getClass().getSimpleName() + "] ID: " + id
+                + ", Stabilite: " + String.format("%.2f", stabilite)
+                + ", Tehlike: " + tehlikeSeviyesi;
+    }
+}
+
+// ==== Concrete Classes ====
+class VeriPaketi extends KuantumNesnesi {
+    public VeriPaketi(String id, double stabilite, int tehlikeSeviyesi) {
+        super(id, stabilite, tehlikeSeviyesi);
+    }
+
+    @Override
+    public void analizEt() throws KuantumCokusuException {
+        System.out.println("Veri içeriği okundu.");
+        azaltStabilite(5);
+    }
+}
+
+class KaranlikMadde extends KuantumNesnesi implements IKritik {
+    public KaranlikMadde(String id, double stabilite, int tehlikeSeviyesi) {
+        super(id, stabilite, tehlikeSeviyesi);
+    }
+
+    @Override
+    public void analizEt() throws KuantumCokusuException {
+        System.out.println("Karanlık madde analizi yapılıyor...");
+        azaltStabilite(15);
+    }
+
+    @Override
+    public void acilDurumSogutmasi() {
+        System.out.println("Karanlık madde için acil durum soğutması uygulanıyor...");
+        arttirStabilite(50);
+    }
+}
+
+class AntiMadde extends KuantumNesnesi implements IKritik {
+    public AntiMadde(String id, double stabilite, int tehlikeSeviyesi) {
+        super(id, stabilite, tehlikeSeviyesi);
+    }
+
+    @Override
+    public void analizEt() throws KuantumCokusuException {
+        System.out.println("Evrenin dokusu titriyor...");
+        azaltStabilite(25);
+    }
+
+    @Override
+    public void acilDurumSogutmasi() {
+        System.out.println("Antimadde için acil durum soğutması uygulanıyor...");
+        arttirStabilite(50);
+    }
+}
+
+// ==== Main Program ====
+public class KuantumKaosYonetimiJava {
+    private static final List<KuantumNesnesi> envanter = new ArrayList<>();
+    private static final Random rnd = new Random();
+    private static int sayac = 1;
+
+    public static void main(String[] args) {
+        Scanner scanner = new Scanner(System.in);
+
+        try {
+            while (true) {
+                System.out.println("KUANTUM AMBARI KONTROL PANELİ");
+                System.out.println("1. Yeni Nesne Ekle (Rastgele)");
+                System.out.println("2. Tüm Envanteri Listele");
+                System.out.println("3. Nesneyi Analiz Et (ID ile)");
+                System.out.println("4. Acil Durum Soğutması Yap (ID ile)");
+                System.out.println("5. Çıkış");
+                System.out.print("Seçiminiz: ");
+
+                String secim = scanner.nextLine();
+                System.out.println();
+
+                switch (secim) {
+                    case "1":
+                        yeniNesneEkle();
+                        break;
+                    case "2":
+                        envanteriListele();
+                        break;
+                    case "3":
+                        nesneAnalizEt(scanner);
+                        break;
+                    case "4":
+                        sogutmaYap(scanner);
+                        break;
+                    case "5":
+                        scanner.close();
+                        return;
+                    default:
+                        System.out.println("Geçersiz seçim!\n");
+                        break;
+                }
+
+                System.out.println();
+            }
+        } catch (KuantumCokusuException ex) {
+            System.out.println();
+            System.out.println("SİSTEM ÇÖKTÜ! TAHLİYE BAŞLATILIYOR...");
+            System.out.println(ex.getMessage());
+        }
+
+        System.out.println("Program sonlandı.");
+    }
+
+    private static void yeniNesneEkle() {
+        int tip = rnd.nextInt(3); // 0,1,2
+        double stabilite = 60 + rnd.nextInt(41); // 60-100
+        int tehlike = 1 + rnd.nextInt(10);       // 1-10
+
+        KuantumNesnesi nesne;
+        String id;
+
+        if (tip == 0) {
+            id = "V-" + (sayac++);
+            nesne = new VeriPaketi(id, stabilite, tehlike);
+        } else if (tip == 1) {
+            id = "K-" + (sayac++);
+            nesne = new KaranlikMadde(id, stabilite, tehlike);
+        } else {
+            id = "A-" + (sayac++);
+            nesne = new AntiMadde(id, stabilite, tehlike);
+        }
+
+        envanter.add(nesne);
+        System.out.println("Yeni nesne eklendi: " + nesne.durumBilgisi());
+    }
+
+    private static void envanteriListele() {
+        if (envanter.isEmpty()) {
+            System.out.println("Envanter boş.");
+            return;
+        }
+
+        System.out.println("=== ENVANTER DURUMU ===");
+        for (KuantumNesnesi nesne : envanter) {
+            System.out.println(nesne.durumBilgisi());
+        }
+    }
+
+    private static KuantumNesnesi nesneBul(String id) {
+        for (KuantumNesnesi n : envanter) {
+            if (n.getID().equalsIgnoreCase(id)) {
+                return n;
+            }
+        }
+        return null;
+    }
+
+    private static void nesneAnalizEt(Scanner scanner) throws KuantumCokusuException {
+        if (envanter.isEmpty()) {
+            System.out.println("Depo tamamen boş.");
+            return;
+        }
+
+        System.out.print("Analiz edilecek nesnenin ID'sini giriniz: ");
+        String id = scanner.nextLine();
+
+        KuantumNesnesi nesne = nesneBul(id);
+        if (nesne == null) {
+            System.out.println("Nesne bulunamadı!");
+            return;
+        }
+
+        nesne.analizEt();
+        System.out.println("Güncel durum: " + nesne.durumBilgisi());
+    }
+
+    private static void sogutmaYap(Scanner scanner) {
+        if (envanter.isEmpty()) {
+            System.out.println("Depo tamamen boş.");
+            return;
+        }
+
+        System.out.print("Soğutma yapılacak nesnenin ID'sini giriniz: ");
+        String id = scanner.nextLine();
+
+        KuantumNesnesi nesne = nesneBul(id);
+        if (nesne == null) {
+            System.out.println("Nesne bulunamadı!");
+            return;
+        }
+
+        if (nesne instanceof IKritik) {
+            IKritik kritik = (IKritik) nesne;
+            kritik.acilDurumSogutmasi();
+            System.out.println("Güncel durum: " + nesne.durumBilgisi());
+        } else {
+            System.out.println("Bu nesne soğutulamaz! (IKritik değil)");
+        }
+    }
+}

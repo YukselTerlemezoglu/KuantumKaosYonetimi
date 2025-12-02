@@ -1,0 +1,251 @@
+// kuantum_kaos.js
+const readline = require("readline");
+
+// ==== Custom Exception ====
+class KuantumCokusuException extends Error {
+    constructor(message) {
+        super(message);
+        this.name = "KuantumCokusuException";
+    }
+}
+
+// ==== "Interface" benzeri yaklaşım ====
+// JS'te interface yok, sadece sözleşme gibi davranacağız.
+
+// ==== Abstract Base Class ====
+class KuantumNesnesi {
+    constructor(id, stabilite, tehlikeSeviyesi) {
+        this._id = id;
+        this._stabilite = 0;
+        this.stabilite = stabilite;
+        this._tehlikeSeviyesi = 0;
+        this.tehlikeSeviyesi = tehlikeSeviyesi;
+    }
+
+    get ID() {
+        return this._id;
+    }
+
+    get stabilite() {
+        return this._stabilite;
+    }
+
+    set stabilite(value) {
+        if (value < 0) {
+            this._stabilite = 0;
+        } else if (value > 100) {
+            this._stabilite = 100;
+        } else {
+            this._stabilite = value;
+        }
+    }
+
+    get tehlikeSeviyesi() {
+        return this._tehlikeSeviyesi;
+    }
+
+    set tehlikeSeviyesi(value) {
+        if (value < 1) {
+            this._tehlikeSeviyesi = 1;
+        } else if (value > 10) {
+            this._tehlikeSeviyesi = 10;
+        } else {
+            this._tehlikeSeviyesi = value;
+        }
+    }
+
+    azaltStabilite(miktar) {
+        this.stabilite = this.stabilite - miktar;
+        if (this.stabilite <= 0) {
+            throw new KuantumCokusuException(
+                "Kuantum Çöküşü! Patlayan Nesne ID: " + this.ID
+            );
+        }
+    }
+
+    arttirStabilite(miktar) {
+        this.stabilite = this.stabilite + miktar;
+    }
+
+    analizEt() {
+        throw new Error("analizEt() implement edilmeli");
+    }
+
+    durumBilgisi() {
+        return `[${this.constructor.name}] ID: ${this.ID}, Stabilite: ${this.stabilite.toFixed(
+            2
+        )}, Tehlike: ${this.tehlikeSeviyesi}`;
+    }
+}
+
+// ==== Concrete Classes ====
+class VeriPaketi extends KuantumNesnesi {
+    analizEt() {
+        console.log("Veri içeriği okundu.");
+        this.azaltStabilite(5);
+    }
+}
+
+class KaranlikMadde extends KuantumNesnesi {
+    analizEt() {
+        console.log("Karanlık madde analizi yapılıyor...");
+        this.azaltStabilite(15);
+    }
+
+    acilDurumSogutmasi() {
+        console.log("Karanlık madde için acil durum soğutması uygulanıyor...");
+        this.arttirStabilite(50);
+    }
+}
+
+class AntiMadde extends KuantumNesnesi {
+    analizEt() {
+        console.log("Evrenin dokusu titriyor...");
+        this.azaltStabilite(25);
+    }
+
+    acilDurumSogutmasi() {
+        console.log("Antimadde için acil durum soğutması uygulanıyor...");
+        this.arttirStabilite(50);
+    }
+}
+
+// ==== Envanter & yardımcılar ====
+const envanter = [];
+let sayac = 1;
+
+function yeniNesneEkle() {
+    const tip = Math.floor(Math.random() * 3); // 0,1,2
+    const stabilite = Math.floor(Math.random() * 41) + 60; // 60-100
+    const tehlike = Math.floor(Math.random() * 10) + 1; // 1-10
+
+    let nesne;
+    let id;
+
+    if (tip === 0) {
+        id = `V-${sayac++}`;
+        nesne = new VeriPaketi(id, stabilite, tehlike);
+    } else if (tip === 1) {
+        id = `K-${sayac++}`;
+        nesne = new KaranlikMadde(id, stabilite, tehlike);
+    } else {
+        id = `A-${sayac++}`;
+        nesne = new AntiMadde(id, stabilite, tehlike);
+    }
+
+    envanter.push(nesne);
+    console.log("Yeni nesne eklendi: " + nesne.durumBilgisi());
+}
+
+function envanteriListele() {
+    if (envanter.length === 0) {
+        console.log("Envanter boş.");
+        return;
+    }
+    console.log("=== ENVANTER DURUMU ===");
+    for (const nesne of envanter) {
+        console.log(nesne.durumBilgisi());
+    }
+}
+
+function nesneBul(id) {
+    return envanter.find((n) => n.ID.toLowerCase() === id.toLowerCase()) || null;
+}
+
+// ==== Readline ayarları ====
+const rl = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout,
+});
+
+function soru(s) {
+    return new Promise((resolve) => rl.question(s, resolve));
+}
+
+// ==== İşlemler ====
+async function nesneAnalizEt() {
+    if (envanter.length === 0) {
+        console.log("Depo tamamen boş.");
+        return;
+    }
+
+    const id = (await soru("Analiz edilecek nesnenin ID'sini giriniz: ")).trim();
+    const nesne = nesneBul(id);
+
+    if (!nesne) {
+        console.log("Nesne bulunamadı!");
+        return;
+    }
+
+    nesne.analizEt();
+    console.log("Güncel durum: " + nesne.durumBilgisi());
+}
+
+async function sogutmaYap() {
+    if (envanter.length === 0) {
+        console.log("Depo tamamen boş.");
+        return;
+    }
+
+    const id = (await soru("Soğutma yapılacak nesnenin ID'sini giriniz: ")).trim();
+    const nesne = nesneBul(id);
+
+    if (!nesne) {
+        console.log("Nesne bulunamadı!");
+        return;
+    }
+
+    // "IKritik" kontrolü: JS için acilDurumSogutmasi metodu var mı diye bakıyoruz
+    if (typeof nesne.acilDurumSogutmasi === "function") {
+        nesne.acilDurumSogutmasi();
+        console.log("Güncel durum: " + nesne.durumBilgisi());
+    } else {
+        console.log("Bu nesne soğutulamaz! (IKritik değil)");
+    }
+}
+
+// ==== Main Loop ====
+async function main() {
+    try {
+        while (true) {
+            console.log("KUANTUM AMBARI KONTROL PANELİ");
+            console.log("1. Yeni Nesne Ekle (Rastgele)");
+            console.log("2. Tüm Envanteri Listele");
+            console.log("3. Nesneyi Analiz Et (ID ile)");
+            console.log("4. Acil Durum Soğutması Yap (ID ile)");
+            console.log("5. Çıkış");
+
+            const secim = (await soru("Seçiminiz: ")).trim();
+            console.log();
+
+            if (secim === "1") {
+                yeniNesneEkle();
+            } else if (secim === "2") {
+                envanteriListele();
+            } else if (secim === "3") {
+                await nesneAnalizEt();
+            } else if (secim === "4") {
+                await sogutmaYap();
+            } else if (secim === "5") {
+                break;
+            } else {
+                console.log("Geçersiz seçim!\n");
+            }
+
+            console.log();
+        }
+    } catch (err) {
+        if (err instanceof KuantumCokusuException) {
+            console.log();
+            console.log("SİSTEM ÇÖKTÜ! TAHLİYE BAŞLATILIYOR...");
+            console.log(err.message);
+        } else {
+            console.error("Beklenmeyen hata:", err);
+        }
+    } finally {
+        console.log("Program sonlandı.");
+        rl.close();
+    }
+}
+
+main();
